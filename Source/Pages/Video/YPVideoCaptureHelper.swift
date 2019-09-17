@@ -105,9 +105,7 @@ class YPVideoCaptureHelper: NSObject {
     // MARK: - Focus
     
     public func focus(onPoint point: CGPoint) {
-        if let device = videoInput?.device {
-            setFocusPointOnDevice(device: device, point: point)
-        }
+        setFocusPointOnDevice(device: videoInput!.device, point: point)
     }
     
     // MARK: - Stop Camera
@@ -188,7 +186,7 @@ class YPVideoCaptureHelper: NSObject {
             
             let timeScale: Int32 = 30 // FPS
             let maxDuration =
-                CMTimeMakeWithSeconds(self.videoRecordingTimeLimit, preferredTimescale: timeScale)
+                CMTimeMakeWithSeconds(self.videoRecordingTimeLimit, timeScale)
             videoOutput.maxRecordedDuration = maxDuration
             videoOutput.minFreeDiskSpaceLimit = 1024 * 1024
             if session.canAddOutput(videoOutput) {

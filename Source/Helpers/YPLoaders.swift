@@ -11,7 +11,7 @@ import UIKit
 struct YPLoaders {
 
     static var defaultLoader: UIBarButtonItem {
-        let spinner = UIActivityIndicatorView(style: .gray)
+        let spinner = UIActivityIndicatorView(activityIndicatorStyle: .gray)
         spinner.color = YPConfig.colors.navigationBarActivityIndicatorColor
         spinner.startAnimating()
         return UIBarButtonItem(customView: spinner)

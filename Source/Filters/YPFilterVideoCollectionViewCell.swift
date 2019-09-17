@@ -1,17 +1,19 @@
 //
-//  YPFilterCollectionViewCell.swift
-//  photoTaking
+//  YPFilterVideoCollectionViewCell.swift
+//  YPImagePicker
 //
-//  Created by Sacha Durand Saint Omer on 21/10/16.
-//  Copyright © 2016 octopepper. All rights reserved.
+//  Created by Kunj Mac3 on 27/09/18.
+//  Copyright © 2018 Yummypets. All rights reserved.
 //
 
-import Stevia
+import UIKit
 
-class YPFilterCollectionViewCell: UICollectionViewCell {
+class YPFilterVideoCollectionViewCell: UICollectionViewCell {
+
+    @IBOutlet var imageView: UIImageView!
     
-    let name = UILabel()
-    let imageView = UIImageView()
+    @IBOutlet var name: UILabel!
+    
     override var isHighlighted: Bool { didSet {
         UIView.animate(withDuration: 0.1) {
             self.contentView.transform = self.isHighlighted
@@ -31,18 +33,10 @@ class YPFilterCollectionViewCell: UICollectionViewCell {
         }
     }
     
-    required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        // Initialization code
         
-        sv(
-            name,
-            imageView
-        )
-        
-        |name|.top(0)
-        |imageView|.bottom(0).heightEqualsWidth()
-//        name.Bottom == imageView.Top
         name.font = .systemFont(ofSize: 11, weight: UIFont.Weight.regular)
         name.textColor = UIColor(r: 154, g: 154, b: 154)
         name.textAlignment = .center
@@ -57,4 +51,5 @@ class YPFilterCollectionViewCell: UICollectionViewCell {
         self.layer.shadowRadius = 5
         self.layer.backgroundColor = UIColor.clear.cgColor
     }
+
 }

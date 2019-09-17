@@ -87,8 +87,28 @@ public struct YPImagePickerConfiguration {
     /// List of default filters which will be added on the filter screen
     public var filters: [YPFilter] = [
         YPFilter(name: "Normal", applier: nil),
-        YPFilter(name: "Nashville", applier: YPFilter.nashvilleFilter),
-        YPFilter(name: "Toaster", applier: YPFilter.toasterFilter),
+        YPFilter(name: "Nashville", applier: YPFilter.nashvilleFilter),//
+        YPFilter(name: "Toaster", applier: YPFilter.toasterFilter),//
+        YPFilter(name: "1977", applier: YPFilter.apply1977Filter),
+        YPFilter(name: "Clarendon", applier: YPFilter.clarendonFilter),
+        YPFilter(name: "HazeRemoval", applier: YPFilter.hazeRemovalFilter),
+        YPFilter(name: "Chrome", coreImageFilterName: "CIPhotoEffectChrome"),
+        YPFilter(name: "Fade", coreImageFilterName: "CIPhotoEffectFade"),
+        YPFilter(name: "Instant", coreImageFilterName: "CIPhotoEffectInstant"),
+        YPFilter(name: "Mono", coreImageFilterName: "CIPhotoEffectMono"),
+        YPFilter(name: "Noir", coreImageFilterName: "CIPhotoEffectNoir"),
+        YPFilter(name: "Process", coreImageFilterName: "CIPhotoEffectProcess"),
+        YPFilter(name: "Tonal", coreImageFilterName: "CIPhotoEffectTonal"),
+        YPFilter(name: "Transfer", coreImageFilterName: "CIPhotoEffectTransfer"),
+        YPFilter(name: "Tone", coreImageFilterName: "CILinearToSRGBToneCurve"),
+        YPFilter(name: "Linear", coreImageFilterName: "CISRGBToneCurveToLinear"),
+        YPFilter(name: "Sepia", coreImageFilterName: "CISepiaTone"),
+        ]
+    
+    public var filtersGPU: [YPFilter] = [
+        YPFilter(name: "Normal", applier: nil),
+        YPFilter(name: "Nashville", applier: YPFilter.nashvilleFilter),//
+        YPFilter(name: "Toaster", applier: YPFilter.toasterFilter),//
         YPFilter(name: "1977", applier: YPFilter.apply1977Filter),
         YPFilter(name: "Clarendon", applier: YPFilter.clarendonFilter),
         YPFilter(name: "HazeRemoval", applier: YPFilter.hazeRemovalFilter),

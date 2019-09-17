@@ -9,11 +9,29 @@
 import UIKit
 import Photos
 import PryntTrimmerView
-
-public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC {
+import AVFoundation
+import Stevia
+public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC ,UIGestureRecognizerDelegate{
     
     @IBOutlet weak var trimBottomItem: YPMenuItem!
     @IBOutlet weak var coverBottomItem: YPMenuItem!
+    
+    
+    fileprivate let filters: [YPFilter] = YPConfig.filters
+    
+    fileprivate var selectedFilter: YPFilter?
+    
+    fileprivate var filteredThumbnailImagesArray: [UIImage] = []
+    fileprivate var thumbnailImageForFiltering: CIImage? // Small image for creating filters thumbnails
+    fileprivate var currentlySelectedImageThumbnail: UIImage? // Used for comparing with original image when tapped
+
+    
+//    @IBOutlet var v: YPFiltersView!
+  
+    @IBOutlet var collectionViewContainer: UIView!
+    @IBOutlet var collectionView: UICollectionView!
+    
+    @IBOutlet var filtersLoader: UIActivityIndicatorView!
     
     @IBOutlet weak var videoView: YPVideoView!
     @IBOutlet weak var trimmerView: TrimmerView!
@@ -45,7 +63,70 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC {
 
     override public func viewDidLoad() {
         super.viewDidLoad()
-
+        
+    
+        
+//        self.v = YPFiltersView()
+//          v.imageView.image = self.inputVideo.thumbnail
+       
+        
+//        collectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: layout())
+        collectionView.collectionViewLayout = layout()
+        filtersLoader.activityIndicatorViewStyle = .gray
+//        filtersLoader = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+        filtersLoader.hidesWhenStopped = true
+        filtersLoader.startAnimating()
+        filtersLoader.color = YPConfig.colors.tintColor
+         collectionView.backgroundColor = UIColor.white
+//        collectionViewContainer.sv(
+//            filtersLoader,
+//            collectionView
+//        )
+        
+//        let isIphone4 = UIScreen.main.bounds.height == 480
+//        let sideMargin: CGFloat = isIphone4 ? 0 : 0
+//
+//        |-sideMargin-collectionView.top(0)-sideMargin-|
+//         |-sideMargin-collectionView.bottom(0)-sideMargin-|
+//         |-sideMargin-collectionView.left(0)-sideMargin-|
+//        |-sideMargin-collectionView.right(0)-sideMargin-|
+//        collectionViewContainer.bottom(0)
+//        filtersLoader.centerInContainer()
+//
+         thumbnailImageForFiltering = thumbFromImage(self.inputVideo.thumbnail)
+        DispatchQueue.global().async {
+            self.filteredThumbnailImagesArray = self.filters.map { filter -> UIImage in
+                if let applier = filter.applier,
+                    let thumbnailImage = self.thumbnailImageForFiltering,
+                    let outputImage = applier(thumbnailImage) {
+                    return outputImage.toUIImage()
+                } else {
+                    return self.inputVideo.thumbnail
+                }
+            }
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+                self.collectionView.selectItem(at: IndexPath(row: 0, section: 0),
+                                                 animated: false,
+                                                 scrollPosition: UICollectionViewScrollPosition.bottom)
+                self.filtersLoader.stopAnimating()
+            }
+        }
+        
+        // Setup of Collection View
+        self.collectionView.register(YPFilterCollectionViewCell.self, forCellWithReuseIdentifier: "FilterCell")
+        self.collectionView.dataSource = self
+        self.collectionView.delegate = self
+      
+//        self.collectionView.collectionViewLayout
+        // Touch preview to see original image.
+        let touchDownGR = UILongPressGestureRecognizer(target: self,
+                                                       action: #selector(handleTouchDown))
+        touchDownGR.minimumPressDuration = 0
+        touchDownGR.delegate = self
+//        v.imageView.addGestureRecognizer(touchDownGR)
+//        v.imageView.isUserInteractionEnabled = true
+        
         trimmerView.mainColor = YPConfig.colors.trimmerMainColor
         trimmerView.handleColor = YPConfig.colors.trimmerHandleColor
         trimmerView.positionBarColor = YPConfig.colors.positionLineColor
@@ -83,6 +164,41 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC {
         }
         setupRightBarButtonItem()
     }
+    // MARK: - #########
+
+    func layout() -> UICollectionViewFlowLayout {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 18, bottom: 0, right: 18)
+        
+        return layout
+    }
+    
+    @objc
+    fileprivate func handleTouchDown(sender: UILongPressGestureRecognizer) {
+//        switch sender.state {
+//        case .began:
+////            v.imageView.image = self.inputVideo.thumbnail
+//        case .ended:
+////            v.imageView.image = currentlySelectedImageThumbnail ?? self.inputVideo.thumbnail
+//        default: ()
+//        }
+    }
+    
+    fileprivate func thumbFromImage(_ img: UIImage) -> CIImage {
+        let k = img.size.width / img.size.height
+        let scale = UIScreen.main.scale
+        let thumbnailHeight: CGFloat = 300 * scale
+        let thumbnailWidth = thumbnailHeight * k
+        let thumbnailSize = CGSize(width: thumbnailWidth, height: thumbnailHeight)
+        UIGraphicsBeginImageContext(thumbnailSize)
+        img.draw(in: CGRect(x: 0, y: 0, width: thumbnailSize.width, height: thumbnailSize.height))
+        let smallImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return smallImage!.toCIImage()!
+    }
+    
+    // MARK: - #########
     
     override public func viewDidAppear(_ animated: Bool) {
         trimmerView.asset = inputAsset
@@ -95,6 +211,7 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC {
         videoView.loadVideo(inputVideo)
 
         super.viewDidAppear(animated)
+//        collectionView.collectionViewLayout = layout()
     }
     
     public override func viewWillDisappear(_ animated: Bool) {
@@ -121,7 +238,7 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC {
         do {
             let asset = AVURLAsset(url: inputVideo.url)
             let trimmedAsset = try asset
-                .assetByTrimming(startTime: trimmerView.startTime ?? CMTime.zero,
+                .assetByTrimming(startTime: trimmerView.startTime ?? kCMTimeZero,
                                  endTime: trimmerView.endTime ?? inputAsset.duration)
             
             // Looks like file:///private/var/mobile/Containers/Data/Application
@@ -230,8 +347,8 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC {
         
         if playBackTime >= endTime {
             videoView.player.seek(to: startTime,
-                                  toleranceBefore: CMTime.zero,
-                                  toleranceAfter: CMTime.zero)
+                                  toleranceBefore: kCMTimeZero,
+                                  toleranceAfter: kCMTimeZero)
             trimmerView.seek(to: startTime)
         }
     }
@@ -240,7 +357,7 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC {
 // MARK: - TrimmerViewDelegate
 extension YPVideoFiltersVC: TrimmerViewDelegate {
     public func positionBarStoppedMoving(_ playerTime: CMTime) {
-        videoView.player.seek(to: playerTime, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
+        videoView.player.seek(to: playerTime, toleranceBefore: kCMTimeZero, toleranceAfter: kCMTimeZero)
         videoView.play()
         startPlaybackTimeChecker()
         updateCoverPickerBounds()
@@ -249,7 +366,7 @@ extension YPVideoFiltersVC: TrimmerViewDelegate {
     public func didChangePositionBar(_ playerTime: CMTime) {
         stopPlaybackTimeChecker()
         videoView.pause()
-        videoView.player.seek(to: playerTime, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
+        videoView.player.seek(to: playerTime, toleranceBefore: kCMTimeZero, toleranceAfter: kCMTimeZero)
     }
 }
 
@@ -261,4 +378,73 @@ extension YPVideoFiltersVC: ThumbSelectorViewDelegate {
             coverImageView.image = UIImage(cgImage: imageRef)
         }
     }
+}
+
+extension YPVideoFiltersVC {
+    func getThumbnailFrom(path: URL) -> UIImage? {
+        
+        do {
+            
+            let asset = AVURLAsset(url: path , options: nil)
+            let imgGenerator = AVAssetImageGenerator(asset: asset)
+            imgGenerator.appliesPreferredTrackTransform = true
+            let cgImage = try imgGenerator.copyCGImage(at: CMTimeMake(0, 1), actualTime: nil)
+            let thumbnail = UIImage(cgImage: cgImage)
+            
+            return thumbnail
+            
+        } catch let error {
+            
+            print("*** Error generating thumbnail: \(error.localizedDescription)")
+            return nil
+            
+        }
+        
+    }
+}
+// MARK: - UICollectionViewDelegate
+extension YPVideoFiltersVC: UICollectionViewDataSource {
+    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return filteredThumbnailImagesArray.count
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView,
+                               cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let filter = filters[indexPath.row]
+        let image = filteredThumbnailImagesArray[indexPath.row]
+        if let cell = collectionView
+            .dequeueReusableCell(withReuseIdentifier: "FilterCell",
+                                 for: indexPath) as? YPFilterCollectionViewCell {
+//               cell.imageView.contentMode = .scaleToFill
+            cell.name.text = filter.name
+            cell.imageView.image = image
+            return cell
+        }
+        return UICollectionViewCell()
+    }
+}
+
+extension YPVideoFiltersVC: UICollectionViewDelegate {
+    public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        selectedFilter = filters[indexPath.row]
+        currentlySelectedImageThumbnail = filteredThumbnailImagesArray[indexPath.row]
+        //Check Video Priview
+        //        self.v.imageView.image = currentlySelectedImageThumbnail
+    }
+}
+extension YPVideoFiltersVC : UICollectionViewDelegateFlowLayout {
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+
+        return CGSize(width: collectionView.frame.size.height - 20, height: collectionView.frame.size.height)
+    }
+
+    
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 4.0
+    }
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+         return 4.0
+    }
+    
+    
 }

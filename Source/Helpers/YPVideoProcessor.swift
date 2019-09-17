@@ -61,32 +61,27 @@ class YPVideoProcessor {
         let composition = AVMutableComposition.init()
         composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)
         
-        // Prevent crash if tracks is empty
-        if asset.tracks.isEmpty {
-            return
-        }
-        
         // input clip
         let clipVideoTrack = asset.tracks(withMediaType: .video)[0]
         
         // make it square
         let videoComposition = AVMutableVideoComposition()
         videoComposition.renderSize = CGSize(width: CGFloat(clipVideoTrack.naturalSize.height), height: CGFloat(clipVideoTrack.naturalSize.height))
-        videoComposition.frameDuration = CMTimeMake(value: 1, timescale: 30)
+        videoComposition.frameDuration = CMTimeMake(1, 30)
         let instruction = AVMutableVideoCompositionInstruction()
-        instruction.timeRange = CMTimeRangeMake(start: CMTime.zero, duration: CMTimeMakeWithSeconds(60, preferredTimescale: 30))
+        instruction.timeRange = CMTimeRangeMake(kCMTimeZero, CMTimeMakeWithSeconds(60, 30))
         
         // rotate to potrait
         let transformer = AVMutableVideoCompositionLayerInstruction(assetTrack: clipVideoTrack)
         let t1 = CGAffineTransform(translationX: clipVideoTrack.naturalSize.height, y: -(clipVideoTrack.naturalSize.width - clipVideoTrack.naturalSize.height) / 2)
         let t2: CGAffineTransform = t1.rotated(by: .pi/2)
         let finalTransform: CGAffineTransform = t2
-        transformer.setTransform(finalTransform, at: CMTime.zero)
+        transformer.setTransform(finalTransform, at: kCMTimeZero)
         instruction.layerInstructions = [transformer]
         videoComposition.instructions = [instruction]
         
         // exporter
-        let exporter = AVAssetExportSession.init(asset: asset, presetName: YPConfig.video.compression)
+        let exporter = AVAssetExportSession.init(asset: asset, presetName: AVAssetExportPresetMediumQuality)
         exporter?.videoComposition = videoComposition
         exporter?.outputURL = outputPath
         exporter?.shouldOptimizeForNetworkUse = true

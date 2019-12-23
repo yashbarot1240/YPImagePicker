@@ -12,13 +12,13 @@ import AVFoundation
 
 extension AVAsset {
     func assetByTrimming(startTime: CMTime, endTime: CMTime) throws -> AVAsset {
-        let timeRange = CMTimeRangeFromTimeToTime(start: startTime, end: endTime)
+        let timeRange = CMTimeRangeFromTimeToTime(startTime, endTime)
         let composition = AVMutableComposition()
         do {
             for track in tracks {
                 let compositionTrack = composition.addMutableTrack(withMediaType: track.mediaType,
                                                                    preferredTrackID: track.trackID)
-                try compositionTrack?.insertTimeRange(timeRange, of: track, at: CMTime.zero)
+                try compositionTrack?.insertTimeRange(timeRange, of: track, at: kCMTimeZero)
             }
         } catch let error {
             throw YPTrimError("Error during composition", underlyingError: error)

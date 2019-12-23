@@ -25,9 +25,9 @@ class YPPermissionDeniedPopup {
                           style: .default,
                           handler: { _ in
                             if #available(iOS 10.0, *) {
-                                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+                                UIApplication.shared.open(URL(string: UIApplicationOpenSettingsURLString)!)
                             } else {
-                                UIApplication.shared.openURL(URL(string: UIApplication.openSettingsURLString)!)
+                                UIApplication.shared.openURL(URL(string: UIApplicationOpenSettingsURLString)!)
                             }
             }))
         return alert

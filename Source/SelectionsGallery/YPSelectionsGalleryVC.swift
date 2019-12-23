@@ -120,8 +120,8 @@ extension YPSelectionsGalleryVC: UICollectionViewDelegate {
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let isScrollingBackwards = scrollView.contentOffset.x < lastContentOffsetX
         scrollView.decelerationRate = isScrollingBackwards
-            ? UIScrollView.DecelerationRate.fast
-            : UIScrollView.DecelerationRate.normal
+            ? UIScrollViewDecelerationRateFast
+            : UIScrollViewDecelerationRateNormal
         lastContentOffsetX = scrollView.contentOffset.x
     }
 }

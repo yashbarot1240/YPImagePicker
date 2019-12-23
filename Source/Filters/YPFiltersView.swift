@@ -18,7 +18,7 @@ class YPFiltersView: UIView {
     convenience init() {
         self.init(frame: CGRect.zero)
         collectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: layout())
-        filtersLoader = UIActivityIndicatorView(style: .gray)
+        filtersLoader = UIActivityIndicatorView(activityIndicatorStyle: .gray)
         filtersLoader.hidesWhenStopped = true
         filtersLoader.startAnimating()
         filtersLoader.color = YPConfig.colors.tintColor
@@ -55,7 +55,7 @@ class YPFiltersView: UIView {
     override func awakeFromNib() {
         
         collectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: layout())
-        filtersLoader = UIActivityIndicatorView(style: .gray)
+        filtersLoader = UIActivityIndicatorView(activityIndicatorStyle: .gray)
         filtersLoader.hidesWhenStopped = true
         filtersLoader.startAnimating()
         filtersLoader.color = YPConfig.colors.tintColor

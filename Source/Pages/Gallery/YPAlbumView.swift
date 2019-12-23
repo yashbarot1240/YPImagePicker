@@ -12,7 +12,7 @@ import Stevia
 class YPAlbumView: UIView {
     
     let tableView = UITableView()
-    let spinner = UIActivityIndicatorView(style: .gray)
+    let spinner = UIActivityIndicatorView(activityIndicatorStyle: .gray)
     
     convenience init() {
         self.init(frame: .zero)

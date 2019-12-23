@@ -72,7 +72,7 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC ,UIGestureRecog
         
 //        collectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: layout())
         collectionView.collectionViewLayout = layout()
-        filtersLoader.style = .gray
+        filtersLoader.activityIndicatorViewStyle = .gray
 //        filtersLoader = UIActivityIndicatorView(activityIndicatorStyle: .gray)
         filtersLoader.hidesWhenStopped = true
         filtersLoader.startAnimating()
@@ -238,7 +238,7 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC ,UIGestureRecog
         do {
             let asset = AVURLAsset(url: inputVideo.url)
             let trimmedAsset = try asset
-                .assetByTrimming(startTime: trimmerView.startTime ?? CMTime.zero,
+                .assetByTrimming(startTime: trimmerView.startTime ?? kCMTimeZero,
                                  endTime: trimmerView.endTime ?? inputAsset.duration)
             
             // Looks like file:///private/var/mobile/Containers/Data/Application
@@ -347,8 +347,8 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC ,UIGestureRecog
         
         if playBackTime >= endTime {
             videoView.player.seek(to: startTime,
-                                  toleranceBefore: CMTime.zero,
-                                  toleranceAfter: CMTime.zero)
+                                  toleranceBefore: kCMTimeZero,
+                                  toleranceAfter: kCMTimeZero)
             trimmerView.seek(to: startTime)
         }
     }
@@ -357,7 +357,7 @@ public class YPVideoFiltersVC: UIViewController, IsMediaFilterVC ,UIGestureRecog
 // MARK: - TrimmerViewDelegate
 extension YPVideoFiltersVC: TrimmerViewDelegate {
     public func positionBarStoppedMoving(_ playerTime: CMTime) {
-        videoView.player.seek(to: playerTime, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
+        videoView.player.seek(to: playerTime, toleranceBefore: kCMTimeZero, toleranceAfter: kCMTimeZero)
         videoView.play()
         startPlaybackTimeChecker()
         updateCoverPickerBounds()
@@ -366,7 +366,7 @@ extension YPVideoFiltersVC: TrimmerViewDelegate {
     public func didChangePositionBar(_ playerTime: CMTime) {
         stopPlaybackTimeChecker()
         videoView.pause()
-        videoView.player.seek(to: playerTime, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
+        videoView.player.seek(to: playerTime, toleranceBefore: kCMTimeZero, toleranceAfter: kCMTimeZero)
     }
 }
 
@@ -388,7 +388,7 @@ extension YPVideoFiltersVC {
             let asset = AVURLAsset(url: path , options: nil)
             let imgGenerator = AVAssetImageGenerator(asset: asset)
             imgGenerator.appliesPreferredTrackTransform = true
-            let cgImage = try imgGenerator.copyCGImage(at: CMTimeMake(value: 0, timescale: 1), actualTime: nil)
+            let cgImage = try imgGenerator.copyCGImage(at: CMTimeMake(0, 1), actualTime: nil)
             let thumbnail = UIImage(cgImage: cgImage)
             
             return thumbnail
